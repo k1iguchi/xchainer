@@ -13,7 +13,7 @@ class NNmanager (BaseEstimator):
         self.model = model
         # オプティマイザの設定
         self.optimizer = optimizer
-        self.optimizer.setup(self.model.collect_parameters())
+        self.optimizer.setup(self.model)
         # 損失関数の設定
         self.lossFunction = lossFunction
         # epochの設定
