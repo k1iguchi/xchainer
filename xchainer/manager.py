@@ -4,6 +4,7 @@ from sklearn.base import BaseEstimator
 
 from chainer import Variable
 import chainer.functions as F
+from chainer import cuda
 
 
 class NNmanager (BaseEstimator):
@@ -47,7 +48,7 @@ class NNmanager (BaseEstimator):
     def backward(self, y_predict, y_data):
         y = Variable(y_data)
         loss = self.lossFunction(y_predict, y)
-        accuracy = F.accuracy(y_predict, y)
+        accuracy = 1000.0 / self.lossFunction(y_predict, y) #F.accuracy(y_predict, y)
         loss.backward()
         return loss, accuracy
 
@@ -68,8 +69,13 @@ class NNmanager (BaseEstimator):
         sum_accuracy = 0
 
         for i in xrange(0, trainsize, self.batchsize):
-            x_batch = x_train[indexes[i: i + self.batchsize]]
-            y_batch = y_train[indexes[i: i + self.batchsize]]
+            if isinstance(x_train, cuda.cupy.ndarray):
+                x_batch = cuda.cupy.array(x_train.get()[indexes[i: i + self.batchsize]])
+                y_batch = cuda.cupy.array(y_train.get()[indexes[i: i + self.batchsize]])
+            else:
+                x_batch = x_train[indexes[i: i + self.batchsize]]
+                y_batch = y_train[indexes[i: i + self.batchsize]]
+
             self.optimizer.zero_grads()
             y_predict = self.forward(x_batch, train=True)
             loss, accuracy = self.backward(y_predict, y_batch)
