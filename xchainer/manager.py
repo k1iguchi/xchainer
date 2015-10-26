@@ -1,4 +1,5 @@
 # -*- coding: utf_8 -*-
+import sys
 import numpy as np
 from sklearn.base import BaseEstimator
 
@@ -55,11 +56,20 @@ class NNmanager (BaseEstimator):
         self.logging = logging
 
     def runEpoch(self, x_train, y_train):
-        for epoch in xrange(self.epoch):
+        best_loss = sys.maxint
+        last_update = 0
+        epoch = 0
+        while True:
+            epoch+=1
             mean_loss, mean_accuracy = self.epochProcess(x_train, y_train)
+            if best_loss > mean_loss:
+                best_loss = mean_loss
+                last_update = epoch
             if(self.logging):
-                logFormat = "[%d epoch] mean loss: %f, mean accuracy: %f"
-                print logFormat % (epoch, mean_loss, mean_accuracy)
+                logFormat = "epoch\t%d\tmean_loss\t%f\tmean_accuracy\t%f\tbest_loss\t%f"
+                print logFormat % (epoch, mean_loss, mean_accuracy, best_loss)
+            if epoch - last_update > self.epoch:
+                return
 
     def epochProcess(self, x_train, y_train):
         trainsize = len(y_train)
